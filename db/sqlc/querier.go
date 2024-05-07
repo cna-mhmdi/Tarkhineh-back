@@ -9,10 +9,13 @@ import (
 )
 
 type Querier interface {
+	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteUser(ctx context.Context, username string) error
+	GetProfile(ctx context.Context, id int64) (Profile, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
+	UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error)
 }
 
 var _ Querier = (*Queries)(nil)

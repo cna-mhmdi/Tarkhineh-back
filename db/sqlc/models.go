@@ -11,17 +11,17 @@ import (
 
 type Address struct {
 	ID          int64          `json:"id"`
-	UserID      string         `json:"user_id"`
+	Username    string         `json:"username"`
 	AddressLine sql.NullString `json:"address_line"`
 	AddressTag  sql.NullString `json:"address_tag"`
 	PhoneNumber sql.NullString `json:"phone_number"`
 }
 
 type Favorite struct {
-	ID      int64     `json:"id"`
-	UserID  string    `json:"user_id"`
-	FoodID  int64     `json:"food_id"`
-	AddedAt time.Time `json:"added_at"`
+	ID       int64     `json:"id"`
+	Username string    `json:"username"`
+	FoodID   int64     `json:"food_id"`
+	AddedAt  time.Time `json:"added_at"`
 }
 
 type Food struct {
@@ -34,14 +34,14 @@ type Food struct {
 }
 
 type Profile struct {
-	ID          int64          `json:"id"`
-	UserID      string         `json:"user_id"`
-	FirstName   sql.NullString `json:"first_name"`
-	LastName    sql.NullString `json:"last_name"`
-	Email       string         `json:"email"`
-	PhoneNumber sql.NullString `json:"phone_number"`
-	Birthday    sql.NullTime   `json:"birthday"`
-	Nickname    sql.NullString `json:"nickname"`
+	ID          int64  `json:"id"`
+	Username    string `json:"username"`
+	FirstName   string `json:"first_name"`
+	LastName    string `json:"last_name"`
+	Email       string `json:"email"`
+	PhoneNumber string `json:"phone_number"`
+	Birthday    string `json:"birthday"`
+	Nickname    string `json:"nickname"`
 }
 
 type User struct {

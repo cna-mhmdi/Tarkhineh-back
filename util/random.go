@@ -35,3 +35,11 @@ func RandomUsername() string {
 func RandomPassword() string {
 	return RandomString(6)
 }
+
+func RandomEmail() string {
+	return RandomString(6) + "@gmail.com"
+}
+
+func RandomBirthday() string {
+	return "05-07-2024"
+}
