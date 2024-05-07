@@ -18,10 +18,11 @@ CREATE TABLE "profiles" (
 CREATE TABLE "food" (
  "id" bigserial PRIMARY KEY,
  "name" varchar NOT NULL,
- "description" text NOT NULL,
- "price" numeric NOT NULL,
+ "description" varchar NOT NULL,
+ "price" integer NOT NULL,
  "rate" integer NOT NULL,
- "discount" integer NOT NULL
+ "discount" integer NOT NULL,
+ "food_tag" varchar NOT NULL
 );
 
 CREATE TABLE "addresses" (

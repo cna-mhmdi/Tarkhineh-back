@@ -28,9 +28,10 @@ type Food struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Price       string `json:"price"`
+	Price       int32  `json:"price"`
 	Rate        int32  `json:"rate"`
 	Discount    int32  `json:"discount"`
+	FoodTag     string `json:"food_tag"`
 }
 
 type Profile struct {
