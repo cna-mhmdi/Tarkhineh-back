@@ -5,16 +5,15 @@
 package db
 
 import (
-	"database/sql"
 	"time"
 )
 
 type Address struct {
-	ID          int64          `json:"id"`
-	Username    string         `json:"username"`
-	AddressLine sql.NullString `json:"address_line"`
-	AddressTag  sql.NullString `json:"address_tag"`
-	PhoneNumber sql.NullString `json:"phone_number"`
+	ID          int64  `json:"id"`
+	Username    string `json:"username"`
+	AddressLine string `json:"address_line"`
+	AddressTag  string `json:"address_tag"`
+	PhoneNumber string `json:"phone_number"`
 }
 
 type Favorite struct {

@@ -28,9 +28,9 @@ CREATE TABLE "food" (
 CREATE TABLE "addresses" (
  "id" bigserial PRIMARY KEY,
  "username" varchar NOT NULL,
- "address_line" varchar,
- "address_tag" varchar,
- "phone_number" varchar
+ "address_line" varchar NOT NULL,
+ "address_tag" varchar NOT NULL,
+ "phone_number" varchar NOT NULL
 );
 
 CREATE TABLE "favorites" (
