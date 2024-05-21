@@ -15,10 +15,13 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "$(DB_URL)" -verbose down
 
+mock:
+	mockgen -package mockdb -destination db/mock/store.go github.com/cna-mhmdi/Tarkhineh-back/db/sqlc Store
+
 test:
 	go test -v -cover -short ./...
 
 server:
 	go run main.go
 
-.PHONY: postgres createdb dropdb migrateup migratedown test server
+.PHONY: postgres createdb dropdb migrateup migratedown mock test server
