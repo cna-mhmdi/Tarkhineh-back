@@ -20,7 +20,7 @@ type Querier interface {
 	GetAddresses(ctx context.Context, id int64) ([]Address, error)
 	GetFavorites(ctx context.Context, id int64) ([]Favorite, error)
 	GetFood(ctx context.Context, name string) (Food, error)
-	GetProfile(ctx context.Context, id int64) (Profile, error)
+	GetProfile(ctx context.Context, username string) (Profile, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListFoods(ctx context.Context, arg ListFoodsParams) ([]Food, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)

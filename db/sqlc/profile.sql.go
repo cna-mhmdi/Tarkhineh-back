@@ -59,11 +59,11 @@ func (q *Queries) CreateProfile(ctx context.Context, arg CreateProfileParams) (P
 
 const getProfile = `-- name: GetProfile :one
 SELECT id, username, first_name, last_name, email, phone_number, birthday, nickname FROM profiles
-WHERE id = $1 LIMIT 1
+WHERE username = $1 LIMIT 1
 `
 
-func (q *Queries) GetProfile(ctx context.Context, id int64) (Profile, error) {
-	row := q.db.QueryRowContext(ctx, getProfile, id)
+func (q *Queries) GetProfile(ctx context.Context, username string) (Profile, error) {
+	row := q.db.QueryRowContext(ctx, getProfile, username)
 	var i Profile
 	err := row.Scan(
 		&i.ID,

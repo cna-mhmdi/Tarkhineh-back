@@ -14,7 +14,7 @@ INSERT INTO profiles (
 
 -- name: GetProfile :one
 SELECT * FROM profiles
-WHERE id = $1 LIMIT 1;
+WHERE username = $1 LIMIT 1;
 
 
 -- name: UpdateProfile :one

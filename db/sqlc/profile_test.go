@@ -53,7 +53,7 @@ func TestCreateProfile(t *testing.T) {
 
 func TestGetProfile(t *testing.T) {
 	profile1 := createUserProfile(t)
-	profile2, err := testQueries.GetProfile(context.Background(), profile1.ID)
+	profile2, err := testQueries.GetProfile(context.Background(), profile1.Username)
 
 	require.NoError(t, err)
 	require.NotEmpty(t, profile2)

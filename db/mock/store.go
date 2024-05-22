@@ -198,7 +198,7 @@ func (mr *MockStoreMockRecorder) GetFood(arg0, arg1 interface{}) *gomock.Call {
 }
 
 // GetProfile mocks base method.
-func (m *MockStore) GetProfile(arg0 context.Context, arg1 int64) (db.Profile, error) {
+func (m *MockStore) GetProfile(arg0 context.Context, arg1 string) (db.Profile, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfile", arg0, arg1)
 	ret0, _ := ret[0].(db.Profile)

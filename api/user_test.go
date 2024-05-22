@@ -10,15 +10,45 @@ import (
 	"github.com/cna-mhmdi/Tarkhineh-back/util"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/mock/gomock"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 )
 
+type eqCreateUserParamsMatcher struct {
+	arg      db.CreateUserParams
+	password string
+}
+
+func (e eqCreateUserParamsMatcher) Matches(x interface{}) bool {
+	arg, ok := x.(db.CreateUserParams)
+	if !ok {
+		return false
+	}
+
+	err := util.CheckPassword(e.password, arg.PasswordHash)
+	if err != nil {
+		return false
+	}
+
+	e.arg.PasswordHash = arg.PasswordHash
+	return reflect.DeepEqual(e.arg, arg)
+}
+
+func (e eqCreateUserParamsMatcher) String() string {
+	return fmt.Sprintf("matches arg %v and password %v", e.arg, e.password)
+}
+
+func EqCreateUserParams(arg db.CreateUserParams, password string) gomock.Matcher {
+	return eqCreateUserParamsMatcher{arg, password}
+}
+
 func TestCreateUser(t *testing.T) {
-	user := randomUser()
+	user, password := randomUser(t)
 
 	testCase := []struct {
 		name          string
@@ -30,17 +60,16 @@ func TestCreateUser(t *testing.T) {
 			name: "OK",
 			body: gin.H{
 				"username":      user.Username,
-				"password_hash": user.PasswordHash,
+				"password_hash": password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 
 				arg := db.CreateUserParams{
-					Username:     user.Username,
-					PasswordHash: user.PasswordHash,
+					Username: user.Username,
 				}
 
 				store.EXPECT().
-					CreateUser(gomock.Any(), gomock.Eq(arg)).
+					CreateUser(gomock.Any(), EqCreateUserParams(arg, password)).
 					Times(1).
 					Return(user, nil)
 			},
@@ -53,7 +82,7 @@ func TestCreateUser(t *testing.T) {
 			name: "InternalError",
 			body: gin.H{
 				"username":      user.Username,
-				"password_hash": user.PasswordHash,
+				"password_hash": password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 
@@ -70,29 +99,23 @@ func TestCreateUser(t *testing.T) {
 			name: "UserNameDuplicated",
 			body: gin.H{
 				"username":      "sina1",
-				"password_hash": user.PasswordHash,
+				"password_hash": password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
-
-				arg := db.CreateUserParams{
-					Username:     "sina1",
-					PasswordHash: user.PasswordHash,
-				}
-
 				store.EXPECT().
-					CreateUser(gomock.Any(), arg).
+					CreateUser(gomock.Any(), gomock.Any()).
 					Times(1).
-					Return(db.User{}, sql.ErrConnDone)
+					Return(db.User{}, &pq.Error{Code: "23505"})
 			},
 			checkResponse: func(recorder *httptest.ResponseRecorder) {
-				require.Equal(t, http.StatusInternalServerError, recorder.Code)
+				require.Equal(t, http.StatusForbidden, recorder.Code)
 			},
 		},
 		{
 			name: "UsernameRequired",
 			body: gin.H{
 				"username":      nil,
-				"password_hash": user.PasswordHash,
+				"password_hash": password,
 			},
 			buildStubs: func(store *mockdb.MockStore) {
 			},
@@ -129,7 +152,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUser(t *testing.T) {
-	user := randomUser()
+	user, _ := randomUser(t)
 
 	testcase := []struct {
 		name          string
@@ -213,11 +236,16 @@ func TestGetUser(t *testing.T) {
 	}
 }
 
-func randomUser() db.User {
-	return db.User{
+func randomUser(t *testing.T) (user db.User, password string) {
+	password = util.RandomString(6)
+	hashedPassword, err := util.HashPassword(password)
+	require.NoError(t, err)
+
+	user = db.User{
 		Username:     util.RandomUsername(),
-		PasswordHash: util.RandomPassword(),
+		PasswordHash: hashedPassword,
 	}
+	return
 }
 
 func requireBodyMatchAccount(t *testing.T, body *bytes.Buffer, user db.User) {
