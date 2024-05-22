@@ -53,13 +53,13 @@ func (server *Server) createProfile(ctx *gin.Context) {
 }
 
 type getUserProfileRequest struct {
-	Username string `uri:"username" binding:"required,alpha"`
+	Username string `json:"username" binding:"required,alpha"`
 }
 
 func (server *Server) getProfile(ctx *gin.Context) {
 	var req getUserProfileRequest
 
-	err := ctx.ShouldBindUri(&req)
+	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
