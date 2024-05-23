@@ -23,6 +23,11 @@ func NewServer(store db.Store) *Server {
 	router.GET("/user/profile", server.getProfile)
 	router.PUT("/user/profile", server.updateProfile)
 
+	router.POST("/food", server.createFood)
+	router.GET("/food/:name", server.getFood)
+	router.GET("/food", server.listFoods)
+	router.PUT("/food", server.updateFood)
+
 	server.router = router
 	return server
 }
