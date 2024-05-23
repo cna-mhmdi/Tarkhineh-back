@@ -125,7 +125,7 @@ func (mr *MockStoreMockRecorder) DeleteAddress(arg0, arg1 interface{}) *gomock.C
 }
 
 // DeleteFavorite mocks base method.
-func (m *MockStore) DeleteFavorite(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteFavorite(arg0 context.Context, arg1 db.DeleteFavoriteParams) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteFavorite", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -168,7 +168,7 @@ func (mr *MockStoreMockRecorder) GetAddresses(arg0, arg1 interface{}) *gomock.Ca
 }
 
 // GetFavorites mocks base method.
-func (m *MockStore) GetFavorites(arg0 context.Context, arg1 int64) ([]db.Favorite, error) {
+func (m *MockStore) GetFavorites(arg0 context.Context, arg1 string) ([]db.Favorite, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetFavorites", arg0, arg1)
 	ret0, _ := ret[0].([]db.Favorite)
@@ -195,6 +195,21 @@ func (m *MockStore) GetFood(arg0 context.Context, arg1 string) (db.Food, error) 
 func (mr *MockStoreMockRecorder) GetFood(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFood", reflect.TypeOf((*MockStore)(nil).GetFood), arg0, arg1)
+}
+
+// GetFoodById mocks base method.
+func (m *MockStore) GetFoodById(arg0 context.Context, arg1 int64) (db.Food, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetFoodById", arg0, arg1)
+	ret0, _ := ret[0].(db.Food)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetFoodById indicates an expected call of GetFoodById.
+func (mr *MockStoreMockRecorder) GetFoodById(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFoodById", reflect.TypeOf((*MockStore)(nil).GetFoodById), arg0, arg1)
 }
 
 // GetProfile mocks base method.

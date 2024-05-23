@@ -73,6 +73,26 @@ func (q *Queries) GetFood(ctx context.Context, name string) (Food, error) {
 	return i, err
 }
 
+const getFoodById = `-- name: GetFoodById :one
+SELECT id, name, description, price, rate, discount, food_tag FROM food
+WHERE id = $1 LIMIT 1
+`
+
+func (q *Queries) GetFoodById(ctx context.Context, id int64) (Food, error) {
+	row := q.db.QueryRowContext(ctx, getFoodById, id)
+	var i Food
+	err := row.Scan(
+		&i.ID,
+		&i.Name,
+		&i.Description,
+		&i.Price,
+		&i.Rate,
+		&i.Discount,
+		&i.FoodTag,
+	)
+	return i, err
+}
+
 const listFoods = `-- name: ListFoods :many
 SELECT id, name, description, price, rate, discount, food_tag FROM food
 ORDER BY food_tag

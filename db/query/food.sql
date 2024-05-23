@@ -14,6 +14,10 @@ INSERT INTO food (
 SELECT * FROM food
 WHERE name = $1 LIMIT 1;
 
+-- name: GetFoodById :one
+SELECT * FROM food
+WHERE id = $1 LIMIT 1;
+
 -- name: ListFoods :many
 SELECT * FROM food
 ORDER BY food_tag

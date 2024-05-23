@@ -15,11 +15,12 @@ type Querier interface {
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAddress(ctx context.Context, id int64) error
-	DeleteFavorite(ctx context.Context, id int64) error
+	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) error
 	DeleteUser(ctx context.Context, username string) error
 	GetAddresses(ctx context.Context, id int64) ([]Address, error)
-	GetFavorites(ctx context.Context, id int64) ([]Favorite, error)
+	GetFavorites(ctx context.Context, username string) ([]Favorite, error)
 	GetFood(ctx context.Context, name string) (Food, error)
+	GetFoodById(ctx context.Context, id int64) (Food, error)
 	GetProfile(ctx context.Context, username string) (Profile, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListFoods(ctx context.Context, arg ListFoodsParams) ([]Food, error)
