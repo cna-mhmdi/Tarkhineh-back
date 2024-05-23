@@ -25,8 +25,13 @@ func NewServer(store db.Store) *Server {
 
 	router.POST("/food", server.createFood)
 	router.GET("/food/:name", server.getFood)
+	router.GET("/food/getFoodById", server.getFoodById)
 	router.GET("/food", server.listFoods)
 	router.PUT("/food", server.updateFood)
+
+	router.POST("/user/favorite", server.createFavoriteUser)
+	router.GET("/user/favorite/:username", server.getFavoritesUser)
+	router.DELETE("/user/favorite", server.deleteUserFavorite)
 
 	server.router = router
 	return server

@@ -37,21 +37,26 @@ func (q *Queries) CreateFavorite(ctx context.Context, arg CreateFavoriteParams) 
 
 const deleteFavorite = `-- name: DeleteFavorite :exec
 DELETE FROM favorites
-WHERE id = $1
+WHERE username = $1 AND food_id = $2
 `
 
-func (q *Queries) DeleteFavorite(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteFavorite, id)
+type DeleteFavoriteParams struct {
+	Username string `json:"username"`
+	FoodID   int64  `json:"food_id"`
+}
+
+func (q *Queries) DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) error {
+	_, err := q.db.ExecContext(ctx, deleteFavorite, arg.Username, arg.FoodID)
 	return err
 }
 
 const getFavorites = `-- name: GetFavorites :many
 SELECT id, username, food_id, added_at FROM favorites
-WHERE id = $1
+WHERE username = $1
 `
 
-func (q *Queries) GetFavorites(ctx context.Context, id int64) ([]Favorite, error) {
-	rows, err := q.db.QueryContext(ctx, getFavorites, id)
+func (q *Queries) GetFavorites(ctx context.Context, username string) ([]Favorite, error) {
+	rows, err := q.db.QueryContext(ctx, getFavorites, username)
 	if err != nil {
 		return nil, err
 	}

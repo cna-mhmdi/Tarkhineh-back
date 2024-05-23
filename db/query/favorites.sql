@@ -8,8 +8,8 @@ INSERT INTO favorites (
 
 -- name: GetFavorites :many
 SELECT * FROM favorites
-WHERE id = $1;
+WHERE username = $1;
 
 -- name: DeleteFavorite :exec
 DELETE FROM favorites
-WHERE id = $1;
+WHERE username = $1 AND food_id = $2;
