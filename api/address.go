@@ -103,6 +103,7 @@ func (server *Server) deleteUserAddress(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"response": "user's address is successfully deleted"})
 }
 
+// update api's should be updated and username should be added for authorization
 type updateUserAddressRequest struct {
 	ID          int64  `json:"id" binding:"required" binding:"required"`
 	AddressLine string `json:"address_line" binding:"required"`

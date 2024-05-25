@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
+	"github.com/cna-mhmdi/Tarkhineh-back/token"
 	"github.com/cna-mhmdi/Tarkhineh-back/util"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
@@ -84,6 +85,13 @@ func (server *Server) getUser(ctx *gin.Context) {
 			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if user.Username != authPayload.Username {
+		err := errors.New("user doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 

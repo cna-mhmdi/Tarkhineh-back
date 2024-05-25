@@ -2,7 +2,9 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
+	"github.com/cna-mhmdi/Tarkhineh-back/token"
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	"net/http"
@@ -26,9 +28,9 @@ func (server *Server) createProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
-
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateProfileParams{
-		Username:    req.Username,
+		Username:    authPayload.Username,
 		FirstName:   req.FirstName,
 		LastName:    req.LastName,
 		Email:       req.Email,
@@ -75,9 +77,17 @@ func (server *Server) getProfile(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if profile.Username != authPayload.Username {
+		err := errors.New("profile doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	ctx.JSON(http.StatusOK, profile)
 }
 
+// update api's should be updated and username should be added for authorization
 type updateUserProfileRequest struct {
 	ID          int64  `json:"id" binding:"required"`
 	FirstName   string `json:"first_name" binding:"required"`
