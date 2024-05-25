@@ -8,11 +8,24 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/lib/pq"
 	"net/http"
+	"time"
 )
 
 type createUserRequest struct {
 	Username     string `json:"username" binding:"required,alphanum"`
 	PasswordHash string `json:"password_hash" binding:"required,min=6"`
+}
+
+type userResponse struct {
+	Username  string    `json:"username"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+func newUserResponse(user db.User) userResponse {
+	return userResponse{
+		Username:  user.Username,
+		CreatedAt: user.CreatedAt,
+	}
 }
 
 func (server *Server) createUser(ctx *gin.Context) {
@@ -46,7 +59,9 @@ func (server *Server) createUser(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, user)
+
+	rsp := newUserResponse(user)
+	ctx.JSON(http.StatusOK, rsp)
 }
 
 type getUserRequest struct {
@@ -122,4 +137,54 @@ func (server *Server) deleteUser(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, "user is successfully deleted")
+}
+
+type loginUserRequest struct {
+	Username     string `json:"username" binding:"required,alphanum"`
+	PasswordHash string `json:"password_hash" binding:"required,min=6"`
+}
+
+type loginUserResponse struct {
+	AccessToken string       `json:"access_token"`
+	User        userResponse `json:"user"`
+}
+
+func (server *Server) loginUser(ctx *gin.Context) {
+	var req loginUserRequest
+	err := ctx.ShouldBindJSON(&req)
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, err)
+		return
+	}
+
+	user, err := server.store.GetUser(ctx, req.Username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	err = util.CheckPassword(req.PasswordHash, user.PasswordHash)
+	if err != nil {
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+	accessToken, _, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.AccessTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := loginUserResponse{
+		AccessToken: accessToken,
+		User:        newUserResponse(user),
+	}
+
+	ctx.JSON(http.StatusOK, rsp)
 }

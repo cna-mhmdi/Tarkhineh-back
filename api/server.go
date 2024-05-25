@@ -1,20 +1,43 @@
 package api
 
 import (
+	"fmt"
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
+	"github.com/cna-mhmdi/Tarkhineh-back/token"
+	"github.com/cna-mhmdi/Tarkhineh-back/util"
 	"github.com/gin-gonic/gin"
 )
 
 type Server struct {
-	store  db.Store
-	router *gin.Engine
+	config     util.Config
+	store      db.Store
+	tokenMaker token.Maker
+	router     *gin.Engine
 }
 
-func NewServer(store db.Store) *Server {
-	server := &Server{store: store}
+func NewServer(config util.Config, store db.Store) (*Server, error) {
+	tokenMaker, err := token.NewPasetoMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
+	server := &Server{
+		config:     config,
+		store:      store,
+		tokenMaker: tokenMaker,
+	}
+
+	server.setupRouter()
+	return server, nil
+}
+
+func (server *Server) setupRouter() {
+
 	router := gin.Default()
 
 	router.POST("/user", server.createUser)
+	router.POST("/user/login", server.loginUser)
+
 	router.GET("/user/:username", server.getUser)
 	//router.GET("/user", server.listUsers)
 	router.DELETE("/user/:username", server.deleteUser)
@@ -39,7 +62,7 @@ func NewServer(store db.Store) *Server {
 	router.PUT("/user/address", server.updateUserAddress)
 
 	server.router = router
-	return server
+
 }
 func (server *Server) Start(address string) error {
 	return server.router.Run(address)
