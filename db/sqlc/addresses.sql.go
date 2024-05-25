@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createAddress = `-- name: CreateAddress :one
@@ -45,22 +46,27 @@ func (q *Queries) CreateAddress(ctx context.Context, arg CreateAddressParams) (A
 	return i, err
 }
 
-const deleteAddress = `-- name: DeleteAddress :exec
-DELETE FROM addresses WHERE id = $1
+const deleteAddress = `-- name: DeleteAddress :execresult
+DELETE FROM addresses
+WHERE username = $1 AND id = $2
 `
 
-func (q *Queries) DeleteAddress(ctx context.Context, id int64) error {
-	_, err := q.db.ExecContext(ctx, deleteAddress, id)
-	return err
+type DeleteAddressParams struct {
+	Username string `json:"username"`
+	ID       int64  `json:"id"`
+}
+
+func (q *Queries) DeleteAddress(ctx context.Context, arg DeleteAddressParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteAddress, arg.Username, arg.ID)
 }
 
 const getAddresses = `-- name: GetAddresses :many
 SELECT id, username, address_line, address_tag, phone_number FROM addresses
-WHERE id = $1
+WHERE username = $1
 `
 
-func (q *Queries) GetAddresses(ctx context.Context, id int64) ([]Address, error) {
-	rows, err := q.db.QueryContext(ctx, getAddresses, id)
+func (q *Queries) GetAddresses(ctx context.Context, username string) ([]Address, error) {
+	rows, err := q.db.QueryContext(ctx, getAddresses, username)
 	if err != nil {
 		return nil, err
 	}

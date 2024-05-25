@@ -10,10 +10,11 @@ INSERT INTO addresses(
 
 -- name: GetAddresses :many
 SELECT * FROM addresses
-WHERE id = $1;
+WHERE username = $1;
 
--- name: DeleteAddress :exec
-DELETE FROM addresses WHERE id = $1;
+-- name: DeleteAddress :execresult
+DELETE FROM addresses
+WHERE username = $1 AND id = $2;
 
 -- name: UpdateAddress :one
 UPDATE addresses

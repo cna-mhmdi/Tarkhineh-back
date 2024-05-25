@@ -6,6 +6,7 @@ package mockdb
 
 import (
 	context "context"
+	sql "database/sql"
 	reflect "reflect"
 
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
@@ -111,11 +112,12 @@ func (mr *MockStoreMockRecorder) CreateUser(arg0, arg1 interface{}) *gomock.Call
 }
 
 // DeleteAddress mocks base method.
-func (m *MockStore) DeleteAddress(arg0 context.Context, arg1 int64) error {
+func (m *MockStore) DeleteAddress(arg0 context.Context, arg1 db.DeleteAddressParams) (sql.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteAddress", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(sql.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteAddress indicates an expected call of DeleteAddress.
@@ -153,7 +155,7 @@ func (mr *MockStoreMockRecorder) DeleteUser(arg0, arg1 interface{}) *gomock.Call
 }
 
 // GetAddresses mocks base method.
-func (m *MockStore) GetAddresses(arg0 context.Context, arg1 int64) ([]db.Address, error) {
+func (m *MockStore) GetAddresses(arg0 context.Context, arg1 string) ([]db.Address, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetAddresses", arg0, arg1)
 	ret0, _ := ret[0].([]db.Address)

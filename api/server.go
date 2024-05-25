@@ -33,6 +33,11 @@ func NewServer(store db.Store) *Server {
 	router.GET("/user/favorite/:username", server.getFavoritesUser)
 	router.DELETE("/user/favorite", server.deleteUserFavorite)
 
+	router.POST("/user/address", server.createUserAddress)
+	router.GET("/user/address/:username", server.getUserAddress)
+	router.DELETE("/user/deleteAddress", server.deleteUserAddress)
+	router.PUT("/user/address", server.updateUserAddress)
+
 	server.router = router
 	return server
 }
