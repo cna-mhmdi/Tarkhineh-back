@@ -127,11 +127,12 @@ func (mr *MockStoreMockRecorder) DeleteAddress(arg0, arg1 interface{}) *gomock.C
 }
 
 // DeleteFavorite mocks base method.
-func (m *MockStore) DeleteFavorite(arg0 context.Context, arg1 db.DeleteFavoriteParams) error {
+func (m *MockStore) DeleteFavorite(arg0 context.Context, arg1 db.DeleteFavoriteParams) (sql.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteFavorite", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(sql.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteFavorite indicates an expected call of DeleteFavorite.
@@ -141,11 +142,12 @@ func (mr *MockStoreMockRecorder) DeleteFavorite(arg0, arg1 interface{}) *gomock.
 }
 
 // DeleteUser mocks base method.
-func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) error {
+func (m *MockStore) DeleteUser(arg0 context.Context, arg1 string) (sql.Result, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteUser", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(sql.Result)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // DeleteUser indicates an expected call of DeleteUser.

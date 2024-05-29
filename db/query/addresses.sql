@@ -18,8 +18,8 @@ WHERE username = $1 AND id = $2;
 
 -- name: UpdateAddress :one
 UPDATE addresses
-set address_line = $2,
-    address_tag = $3,
-    phone_number = $4
-WHERE id = $1
+set address_line = $3,
+    address_tag = $4,
+    phone_number = $5
+WHERE id = $1 AND username = $2
 RETURNING *;

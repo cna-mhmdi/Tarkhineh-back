@@ -49,9 +49,9 @@ func (server *Server) setupRouter() {
 	authRoutes.PUT("/user/profile", server.updateProfile)
 
 	router.POST("/food", server.createFood)
-	router.GET("/food/:name", server.getFood)
-	router.GET("/food/getFoodById", server.getFoodById)
-	router.GET("/food", server.listFoods)
+	authRoutes.GET("/food/:name", server.getFoodByName)
+	authRoutes.GET("/food/getFoodById", server.getFoodById)
+	authRoutes.GET("/food", server.listFoods)
 	router.PUT("/food", server.updateFood)
 
 	authRoutes.POST("/user/favorite", server.createFavoriteUser)

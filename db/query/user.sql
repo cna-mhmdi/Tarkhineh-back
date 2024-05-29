@@ -16,7 +16,7 @@ ORDER BY username
 LIMIT $1
 OFFSET $2;
 
--- name: DeleteUser :exec
+-- name: DeleteUser :execresult
 DELETE FROM users WHERE username = $1;
 
 ----- update user password -----

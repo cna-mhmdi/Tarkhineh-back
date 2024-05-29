@@ -7,6 +7,7 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createFavorite = `-- name: CreateFavorite :one
@@ -15,7 +16,8 @@ INSERT INTO favorites (
     food_id
 ) VALUES (
     $1, $2
-)RETURNING id, username, food_id, added_at
+)
+RETURNING id, username, food_id, added_at
 `
 
 type CreateFavoriteParams struct {
@@ -35,7 +37,7 @@ func (q *Queries) CreateFavorite(ctx context.Context, arg CreateFavoriteParams) 
 	return i, err
 }
 
-const deleteFavorite = `-- name: DeleteFavorite :exec
+const deleteFavorite = `-- name: DeleteFavorite :execresult
 DELETE FROM favorites
 WHERE username = $1 AND food_id = $2
 `
@@ -45,9 +47,8 @@ type DeleteFavoriteParams struct {
 	FoodID   int64  `json:"food_id"`
 }
 
-func (q *Queries) DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) error {
-	_, err := q.db.ExecContext(ctx, deleteFavorite, arg.Username, arg.FoodID)
-	return err
+func (q *Queries) DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) (sql.Result, error) {
+	return q.db.ExecContext(ctx, deleteFavorite, arg.Username, arg.FoodID)
 }
 
 const getFavorites = `-- name: GetFavorites :many

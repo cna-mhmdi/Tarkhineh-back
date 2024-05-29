@@ -96,15 +96,16 @@ func (q *Queries) GetAddresses(ctx context.Context, username string) ([]Address,
 
 const updateAddress = `-- name: UpdateAddress :one
 UPDATE addresses
-set address_line = $2,
-    address_tag = $3,
-    phone_number = $4
-WHERE id = $1
+set address_line = $3,
+    address_tag = $4,
+    phone_number = $5
+WHERE id = $1 AND username = $2
 RETURNING id, username, address_line, address_tag, phone_number
 `
 
 type UpdateAddressParams struct {
 	ID          int64  `json:"id"`
+	Username    string `json:"username"`
 	AddressLine string `json:"address_line"`
 	AddressTag  string `json:"address_tag"`
 	PhoneNumber string `json:"phone_number"`
@@ -113,6 +114,7 @@ type UpdateAddressParams struct {
 func (q *Queries) UpdateAddress(ctx context.Context, arg UpdateAddressParams) (Address, error) {
 	row := q.db.QueryRowContext(ctx, updateAddress,
 		arg.ID,
+		arg.Username,
 		arg.AddressLine,
 		arg.AddressTag,
 		arg.PhoneNumber,

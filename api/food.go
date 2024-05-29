@@ -12,7 +12,7 @@ type createFoodRequest struct {
 	Description string `json:"description" binding:"required"`
 	Price       int32  `json:"price" binding:"required,min=1000"`
 	Rate        int32  `json:"rate" binding:"required,min=5,max=10"`
-	Discount    int32  `json:"discount" binding:"required,min=-1,max=100"`
+	Discount    int32  `json:"discount" binding:"required,min=0,max=100"`
 	FoodTag     string `json:"food_tag" binding:"required"`
 }
 
@@ -47,7 +47,7 @@ type getFoodRequest struct {
 	Name string `uri:"name" binding:"required"`
 }
 
-func (server *Server) getFood(ctx *gin.Context) {
+func (server *Server) getFoodByName(ctx *gin.Context) {
 	var req getFoodRequest
 
 	err := ctx.ShouldBindUri(&req)
@@ -123,9 +123,9 @@ func (server *Server) listFoods(ctx *gin.Context) {
 }
 
 type updateFoodRequest struct {
-	ID          int64  `json:"id" binding:"required"`
-	Name        string `json:"name" binding:"required"`
-	Description string `json:"description" binding:"required"`
+	ID          int64  `json:"id" binding:"required,min=1"`
+	Name        string `json:"name" binding:"required,alphanum"`
+	Description string `json:"description" binding:"required,alphanum"`
 	Price       int32  `json:"price" binding:"required,min=1000"`
 	Rate        int32  `json:"rate" binding:"required,min=1,max=5"`
 	Discount    int32  `json:"discount" binding:"required,min=0,max=100"`

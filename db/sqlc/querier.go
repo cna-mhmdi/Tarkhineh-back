@@ -16,8 +16,8 @@ type Querier interface {
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAddress(ctx context.Context, arg DeleteAddressParams) (sql.Result, error)
-	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) error
-	DeleteUser(ctx context.Context, username string) error
+	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) (sql.Result, error)
+	DeleteUser(ctx context.Context, username string) (sql.Result, error)
 	GetAddresses(ctx context.Context, username string) ([]Address, error)
 	GetFavorites(ctx context.Context, username string) ([]Favorite, error)
 	GetFood(ctx context.Context, name string) (Food, error)

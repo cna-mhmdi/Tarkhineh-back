@@ -19,11 +19,11 @@ WHERE username = $1 LIMIT 1;
 
 -- name: UpdateProfile :one
 UPDATE profiles
-set first_name = $2,
-    last_name = $3,
-    email = $4,
-    phone_number = $5,
-    birthday = $6,
-    nickname = $7
-WHERE id = $1
+set first_name = $3,
+    last_name = $4,
+    email = $5,
+    phone_number = $6,
+    birthday = $7,
+    nickname = $8
+WHERE id = $1 AND username = $2
 RETURNING *;

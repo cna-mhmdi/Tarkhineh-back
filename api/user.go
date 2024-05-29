@@ -61,12 +61,25 @@ func (server *Server) createUser(ctx *gin.Context) {
 		return
 	}
 
-	rsp := newUserResponse(user)
+	accessToken, _, err := server.tokenMaker.CreateToken(
+		user.Username,
+		server.config.AccessTokenDuration,
+	)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	rsp := loginUserResponse{
+		AccessToken: accessToken,
+		User:        newUserResponse(user),
+	}
+
 	ctx.JSON(http.StatusOK, rsp)
 }
 
 type getUserRequest struct {
-	Username string `uri:"username" binding:"required,alpha"`
+	Username string `uri:"username" binding:"required,alphanum"`
 }
 
 func (server *Server) getUser(ctx *gin.Context) {
@@ -124,27 +137,54 @@ func (server *Server) listUsers(ctx *gin.Context) {
 }
 
 type deleteUserRequest struct {
-	Username string `uri:"username" binding:"required"`
+	Username string `uri:"username" binding:"required,alphanum"`
 }
 
 func (server *Server) deleteUser(ctx *gin.Context) {
 	var req deleteUserRequest
+
 	if err := ctx.ShouldBindUri(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
 		return
 	}
 
-	err := server.store.DeleteUser(ctx, req.Username)
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("user doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
+	//err := server.store.DeleteUser(ctx, req.Username)
+	//if err != nil {
+	//	if errors.Is(err, sql.ErrNoRows) {
+	//		ctx.JSON(http.StatusNotFound, errorResponse(err))
+	//		return
+	//	}
+	//	ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+	//	return
+	//}
+	//
+	//ctx.JSON(http.StatusOK, "user is successfully deleted")
+
+	result, err := server.store.DeleteUser(ctx, req.Username)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			ctx.JSON(http.StatusNotFound, errorResponse(err))
-			return
-		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
 
-	ctx.JSON(http.StatusOK, "user is successfully deleted")
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	if rowsAffected == 0 {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "no matching record found"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"response": "user is successfully deleted"})
 }
 
 type loginUserRequest struct {

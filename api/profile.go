@@ -11,13 +11,13 @@ import (
 )
 
 type createProfileRequest struct {
-	Username    string `json:"username" binding:"required"`
-	FirstName   string `json:"first_name" binding:"required"`
-	LastName    string `json:"last_name" binding:"required"`
+	//Username    string `json:"username" binding:"required"`
+	FirstName   string `json:"first_name" binding:"required,alphanum"`
+	LastName    string `json:"last_name" binding:"required,alphanum"`
 	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required"` //e164 format should be added for phone number format validation
+	PhoneNumber string `json:"phone_number" binding:"required,e164"` //e164 format should be added for phone number format validation
 	BirthDay    string `json:"birthday" binding:"required"`
-	NickName    string `json:"nickname" binding:"required"`
+	NickName    string `json:"nickname" binding:"required,alphanum"`
 }
 
 func (server *Server) createProfile(ctx *gin.Context) {
@@ -55,7 +55,7 @@ func (server *Server) createProfile(ctx *gin.Context) {
 }
 
 type getUserProfileRequest struct {
-	Username string `json:"username" binding:"required,alpha"`
+	Username string `json:"username" binding:"required,alphanum"`
 }
 
 func (server *Server) getProfile(ctx *gin.Context) {
@@ -64,6 +64,13 @@ func (server *Server) getProfile(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("profile doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -77,25 +84,18 @@ func (server *Server) getProfile(ctx *gin.Context) {
 		return
 	}
 
-	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	if profile.Username != authPayload.Username {
-		err := errors.New("profile doesn't belong to the authenticated user")
-		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
-		return
-	}
-
 	ctx.JSON(http.StatusOK, profile)
 }
 
-// update api's should be updated and username should be added for authorization
 type updateUserProfileRequest struct {
-	ID          int64  `json:"id" binding:"required"`
-	FirstName   string `json:"first_name" binding:"required"`
-	LastName    string `json:"last_name" binding:"required"`
+	ID          int64  `json:"id" binding:"required,min=1"`
+	Username    string `json:"username" binding:"required,alphanum"`
+	FirstName   string `json:"first_name" binding:"required,alphanum"`
+	LastName    string `json:"last_name" binding:"required,alphanum"`
 	Email       string `json:"email" binding:"required,email"`
-	PhoneNumber string `json:"phone_number" binding:"required"` //e164 format should be added for phone number format validation
+	PhoneNumber string `json:"phone_number" binding:"required,e164"`
 	BirthDay    string `json:"birthday" binding:"required"`
-	NickName    string `json:"nickname" binding:"required"`
+	NickName    string `json:"nickname" binding:"required,alphanum"`
 }
 
 func (server *Server) updateProfile(ctx *gin.Context) {
@@ -107,8 +107,16 @@ func (server *Server) updateProfile(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("profile doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	arg := db.UpdateProfileParams{
 		ID:          req.ID,
+		Username:    req.Username,
 		FirstName:   req.FirstName,
 		LastName:    req.LastName,
 		Email:       req.Email,
@@ -119,6 +127,10 @@ func (server *Server) updateProfile(ctx *gin.Context) {
 
 	profile, err := server.store.UpdateProfile(ctx, arg)
 	if err != nil {
+		if err == sql.ErrNoRows {
+			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
+		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}

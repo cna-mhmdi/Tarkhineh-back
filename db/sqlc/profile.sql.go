@@ -80,18 +80,19 @@ func (q *Queries) GetProfile(ctx context.Context, username string) (Profile, err
 
 const updateProfile = `-- name: UpdateProfile :one
 UPDATE profiles
-set first_name = $2,
-    last_name = $3,
-    email = $4,
-    phone_number = $5,
-    birthday = $6,
-    nickname = $7
-WHERE id = $1
+set first_name = $3,
+    last_name = $4,
+    email = $5,
+    phone_number = $6,
+    birthday = $7,
+    nickname = $8
+WHERE id = $1 AND username = $2
 RETURNING id, username, first_name, last_name, email, phone_number, birthday, nickname
 `
 
 type UpdateProfileParams struct {
 	ID          int64  `json:"id"`
+	Username    string `json:"username"`
 	FirstName   string `json:"first_name"`
 	LastName    string `json:"last_name"`
 	Email       string `json:"email"`
@@ -103,6 +104,7 @@ type UpdateProfileParams struct {
 func (q *Queries) UpdateProfile(ctx context.Context, arg UpdateProfileParams) (Profile, error) {
 	row := q.db.QueryRowContext(ctx, updateProfile,
 		arg.ID,
+		arg.Username,
 		arg.FirstName,
 		arg.LastName,
 		arg.Email,

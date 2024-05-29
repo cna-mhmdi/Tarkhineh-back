@@ -2,16 +2,18 @@ package api
 
 import (
 	"database/sql"
+	"errors"
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
+	"github.com/cna-mhmdi/Tarkhineh-back/token"
 	"github.com/gin-gonic/gin"
 	"net/http"
 )
 
 type createUserAddressRequest struct {
-	Username    string `json:"username" binding:"required"`
+	Username    string `json:"username" binding:"required,alphanum"`
 	AddressLine string `json:"address_line" binding:"required"`
-	AddressTag  string `json:"address_tag" binding:"required"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
+	AddressTag  string `json:"address_tag" binding:"required,alphanum"`
+	PhoneNumber string `json:"phone_number" binding:"required,e164"`
 }
 
 func (server *Server) createUserAddress(ctx *gin.Context) {
@@ -20,6 +22,13 @@ func (server *Server) createUserAddress(ctx *gin.Context) {
 	err := ctx.ShouldBindJSON(&req)
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("username doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -52,6 +61,13 @@ func (server *Server) getUserAddress(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("username doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
+	}
+
 	address, err := server.store.GetAddresses(ctx, req.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -66,8 +82,8 @@ func (server *Server) getUserAddress(ctx *gin.Context) {
 }
 
 type deleteUserAddressRequest struct {
-	Username string `json:"username" binding:"required"`
-	ID       int64  `json:"id" binding:"required,min=0"`
+	Username string `json:"username" binding:"required,alphanum"`
+	ID       int64  `json:"id" binding:"required,min=1"`
 }
 
 func (server *Server) deleteUserAddress(ctx *gin.Context) {
@@ -75,6 +91,13 @@ func (server *Server) deleteUserAddress(ctx *gin.Context) {
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
+		return
+	}
+
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
+	if req.Username != authPayload.Username {
+		err := errors.New("username doesn't belong to the authenticated user")
+		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
 		return
 	}
 
@@ -103,12 +126,12 @@ func (server *Server) deleteUserAddress(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, gin.H{"response": "user's address is successfully deleted"})
 }
 
-// update api's should be updated and username should be added for authorization
 type updateUserAddressRequest struct {
-	ID          int64  `json:"id" binding:"required" binding:"required"`
+	ID          int64  `json:"id" binding:"required,min=1"`
+	Username    string `json:"username" binding:"required,alphanum"`
 	AddressLine string `json:"address_line" binding:"required"`
-	AddressTag  string `json:"address_tag" binding:"required"`
-	PhoneNumber string `json:"phone_number" binding:"required"`
+	AddressTag  string `json:"address_tag" binding:"required,alphanum"`
+	PhoneNumber string `json:"phone_number" binding:"required,e164"`
 }
 
 func (server *Server) updateUserAddress(ctx *gin.Context) {
@@ -121,6 +144,7 @@ func (server *Server) updateUserAddress(ctx *gin.Context) {
 
 	arg := db.UpdateAddressParams{
 		ID:          req.ID,
+		Username:    req.Username,
 		AddressLine: req.AddressLine,
 		AddressTag:  req.AddressTag,
 		PhoneNumber: req.PhoneNumber,
