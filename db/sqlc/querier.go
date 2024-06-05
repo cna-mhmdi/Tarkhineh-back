@@ -7,6 +7,8 @@ package db
 import (
 	"context"
 	"database/sql"
+
+	"github.com/google/uuid"
 )
 
 type Querier interface {
@@ -14,6 +16,7 @@ type Querier interface {
 	CreateFavorite(ctx context.Context, arg CreateFavoriteParams) (Favorite, error)
 	CreateFood(ctx context.Context, arg CreateFoodParams) (Food, error)
 	CreateProfile(ctx context.Context, arg CreateProfileParams) (Profile, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	DeleteAddress(ctx context.Context, arg DeleteAddressParams) (sql.Result, error)
 	DeleteFavorite(ctx context.Context, arg DeleteFavoriteParams) (sql.Result, error)
@@ -23,6 +26,7 @@ type Querier interface {
 	GetFood(ctx context.Context, name string) (Food, error)
 	GetFoodById(ctx context.Context, id int64) (Food, error)
 	GetProfile(ctx context.Context, username string) (Profile, error)
+	GetSession(ctx context.Context, id uuid.UUID) (Session, error)
 	GetUser(ctx context.Context, username string) (User, error)
 	ListFoods(ctx context.Context, arg ListFoodsParams) ([]Food, error)
 	ListUsers(ctx context.Context, arg ListUsersParams) ([]User, error)
