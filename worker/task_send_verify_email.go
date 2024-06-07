@@ -37,13 +37,13 @@ func (distributor *RedisTaskDistributor) DistributeTaskSendVerifyEmail(
 	return nil
 }
 
-func (process *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
+func (processor *RedisTaskProcessor) ProcessTaskSendVerifyEmail(ctx context.Context, task *asynq.Task) error {
 	var payload PayloadSendVerifyEmail
 	if err := json.Unmarshal(task.Payload(), &payload); err != nil {
 		return fmt.Errorf("failed to unmarshal payload: %w", asynq.SkipRetry)
 	}
 
-	user, err := process.store.GetProfile(ctx, payload.Username)
+	user, err := processor.store.GetProfile(ctx, payload.Username)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return fmt.Errorf("user dosen't exist: %w", asynq.SkipRetry)

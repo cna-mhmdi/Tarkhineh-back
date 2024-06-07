@@ -5,9 +5,12 @@ import (
 	"errors"
 	db "github.com/cna-mhmdi/Tarkhineh-back/db/sqlc"
 	"github.com/cna-mhmdi/Tarkhineh-back/token"
+	"github.com/cna-mhmdi/Tarkhineh-back/worker"
 	"github.com/gin-gonic/gin"
+	"github.com/hibiken/asynq"
 	"github.com/lib/pq"
 	"net/http"
+	"time"
 )
 
 type createProfileRequest struct {
@@ -39,7 +42,7 @@ func (server *Server) createProfile(ctx *gin.Context) {
 		Nickname:    req.NickName,
 	}
 
-	Profile, err := server.store.CreateProfile(ctx, arg)
+	profile, err := server.store.CreateProfile(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -51,7 +54,22 @@ func (server *Server) createProfile(ctx *gin.Context) {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
-	ctx.JSON(http.StatusOK, Profile)
+
+	taskPayload := &worker.PayloadSendVerifyEmail{
+		Username: profile.Username,
+	}
+	opts := []asynq.Option{
+		asynq.MaxRetry(10),
+		asynq.ProcessIn(10 * time.Second),
+	}
+
+	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	ctx.JSON(http.StatusOK, profile)
 }
 
 type getUserProfileRequest struct {

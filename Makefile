@@ -24,4 +24,7 @@ test:
 server:
 	go run main.go
 
-.PHONY: postgres createdb dropdb migrateup migratedown mock test server
+redis:
+	docker run --name Tarkhineh-redis -p 6379:6379 -d redis:7-alpine
+
+.PHONY: postgres createdb dropdb migrateup migratedown mock test server redis
