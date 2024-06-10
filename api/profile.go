@@ -32,17 +32,31 @@ func (server *Server) createProfile(ctx *gin.Context) {
 		return
 	}
 	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
-	arg := db.CreateProfileParams{
-		Username:    authPayload.Username,
-		FirstName:   req.FirstName,
-		LastName:    req.LastName,
-		Email:       req.Email,
-		PhoneNumber: req.PhoneNumber,
-		Birthday:    req.BirthDay,
-		Nickname:    req.NickName,
+	arg := db.CreateProfileTxParams{
+		CreateProfileParams: db.CreateProfileParams{
+			Username:    authPayload.Username,
+			FirstName:   req.FirstName,
+			LastName:    req.LastName,
+			Email:       req.Email,
+			PhoneNumber: req.PhoneNumber,
+			Birthday:    req.BirthDay,
+			Nickname:    req.NickName,
+		},
+		AfterCreate: func(profile db.Profile) error {
+
+			taskPayload := &worker.PayloadSendVerifyEmail{
+				Username: profile.Username,
+			}
+			opts := []asynq.Option{
+				asynq.MaxRetry(10),
+				asynq.ProcessIn(10 * time.Second),
+			}
+
+			return server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
+		},
 	}
 
-	profile, err := server.store.CreateProfile(ctx, arg)
+	txResult, err := server.store.CreateProfileTx(ctx, arg)
 	if err != nil {
 		if pqErr, ok := err.(*pq.Error); ok {
 			switch pqErr.Code.Name() {
@@ -55,21 +69,7 @@ func (server *Server) createProfile(ctx *gin.Context) {
 		return
 	}
 
-	taskPayload := &worker.PayloadSendVerifyEmail{
-		Username: profile.Username,
-	}
-	opts := []asynq.Option{
-		asynq.MaxRetry(10),
-		asynq.ProcessIn(10 * time.Second),
-	}
-
-	err = server.taskDistributor.DistributeTaskSendVerifyEmail(ctx, taskPayload, opts...)
-	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
-		return
-	}
-
-	ctx.JSON(http.StatusOK, profile)
+	ctx.JSON(http.StatusOK, txResult)
 }
 
 type getUserProfileRequest struct {
